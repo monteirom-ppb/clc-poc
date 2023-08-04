@@ -1,0 +1,97 @@
+asyncapi: '2.6.0'
+info:
+  title: Customer Liability Calculator
+  version: '1.0.0'
+  description: |
+    The Customer Liability Calculator allows the trader to control the liability of repeated bets of the same parlay.
+  license:
+    name: Apache 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0
+
+servers:
+  dev:
+    url: use1-betting-backbone01.dev.fndlsb.net:9092
+    protocol: kafka
+    description: The liability stream for the dev enviroment
+
+  prd:
+    url: use1-betting-backbone01.prd.fndlsb.net:9092
+    protocol: kafka
+    description: The liability stream for the prd enviroment
+
+defaultContentType: protobuf
+
+channels:
+  liability_stream:
+    description: The topich on which we publish customer liabilities 
+    publish:
+      summary: Inform about the new bets liability threshold for each customer
+      message:
+        $ref: '#/components/messages/Liability'
+
+
+components:
+  messages:
+    Liability:
+      name: betsLiability
+      title: Bets liability
+      payload:
+        $ref: '#/components/schemas/BetLiabilityPayload'
+
+  schemas:
+    BetLiabilityPayload:
+      type: object
+      properties:
+        betCombinationID:
+          type: string
+          format: uuid
+          description: It's generated hash that represents a unique Id of all the legs that are part of this bet
+        accountId:
+          type: integer
+          exclusiveMinimum: 0
+          description: the account id of the customer
+        liabilityFlag:
+          $ref: '#/components/schemas/LiabilityFlag'
+        liabilityThreshold:
+          type: integer
+          exclusiveMinimum: 0
+          description: The liability threshold considered for the bet combination
+        cumulativePotentialWinning:
+          type: integer
+          exclusiveMinimum: 0
+          description: the user cumulative potential winning for this bet combination
+        legs:
+          $ref: '#/components/schemas/Legs' 
+      
+    LiabilityFlag:
+      type: string
+      description: the liability flag for this bet combination
+      enum:
+        - NONE
+        - ALERT
+        - SUSPEND
+    Legs:
+      type: array
+      minimum: 2
+      maximum: 25
+      properties:
+        selectionInfo:
+          $ref: '#/components/schemas/Entity'
+        marketInfo:
+          $ref: '#/components/schemas/Entity'
+        sportInfo:
+          $ref: '#/components/schemas/Entity'
+        competitionInfo:
+          $ref: '#/components/schemas/Entity'
+    Entity:
+      type: object
+      properties:
+        name:
+          type: string
+          description: entity name
+        rampId:
+          type: integer
+          description: entity ramp id
+          exclusiveMinimum: 0
+
+
