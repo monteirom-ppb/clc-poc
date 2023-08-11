@@ -3,7 +3,7 @@ info:
   title: Customer Liability Calculator
   version: '1.0.0'
   description: |
-    The Customer Liability Calculator allows the trader to control the liability of repeated bets of the same parlay.
+    The Customer Liability Calculator may suspend a customer for doing repeat bets based on their potential win
   license:
     name: Apache 2.0
     url: https://www.apache.org/licenses/LICENSE-2.0
@@ -23,53 +23,68 @@ defaultContentType: protobuf
 
 channels:
   liability_stream:
-    description: The topich on which we publish customer liabilities 
+    description: The topic to update the current liabilities for given parlay by customer
     publish:
       summary: Inform about the new bets liability threshold for each customer
+      operationId: accountId.parlayId
       message:
-        $ref: '#/components/messages/Liability'
+        $ref: '#/components/messages/CustomerParlayLiabilityChanged'
 
 
 components:
   messages:
-    Liability:
-      name: betsLiability
-      title: Bets liability
+    CustomerParlayLiabilityChanged:
+      name: customerParlayLiabilityChanged
+      title: Customer parlay liability changed
       payload:
-        $ref: '#/components/schemas/BetLiabilityPayload'
+        $ref: '#/components/schemas/CustomerParlayLiabilityChangedPayload'
 
   schemas:
-    BetLiabilityPayload:
+    CustomerParlayLiabilityChangedPayload:
       type: object
       properties:
-        betCombinationID:
+        id:
           type: string
-          format: uuid
-          description: It's generated hash that represents a unique Id of all the legs that are part of this bet
+          description: This ID will be formed by the accountId + . + parlayId
         accountId:
           type: integer
           exclusiveMinimum: 0
           description: the account id of the customer
-        liabilityFlag:
-          $ref: '#/components/schemas/LiabilityFlag'
-        liabilityThreshold:
+        parlayId:
+          type: string
+          format: uuid
+          description: It's generated hash that represents a unique Id of all the legs that are part of this bet
+        level:
+          $ref: '#/components/schemas/LiabilityLevel'
+        value:
+          type: integer
+          minimum: 0
+          description: The remaining potential winning this customer have for this parlay
+        balance:
           type: integer
           exclusiveMinimum: 0
-          description: The liability threshold considered for the bet combination
-        cumulativePotentialWinning:
-          type: integer
-          exclusiveMinimum: 0
-          description: the user cumulative potential winning for this bet combination
-        legs:
-          $ref: '#/components/schemas/Legs' 
+          description: the user cumulative potential winning for this parlay
+        metadata:
+          $ref: '#/components/schemas/metadata' 
       
-    LiabilityFlag:
+    LiabilityLevel:
       type: string
       description: the liability flag for this bet combination
       enum:
         - NONE
         - ALERT
         - SUSPEND
+
+    metadata:
+      type: object
+      properties:
+        liabilityThreshold:
+          type: integer
+          exclusiveMinimum: 0
+          description: The liability threshold considered for the bet combination
+        legs:
+          $ref: '#/components/schemas/Legs' 
+
     Legs:
       type: array
       minimum: 2
