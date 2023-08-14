@@ -64,6 +64,14 @@ components:
           type: integer
           exclusiveMinimum: 0
           description: the user cumulative potential winning for this parlay
+        productIds:
+          type: array
+          minimum: 1
+          properties:
+            productId:
+              type: integer
+              exclusiveMinimum: 1
+              description: the list of betting states that the user is registered
         metadata:
           $ref: '#/components/schemas/metadata' 
       
@@ -81,9 +89,23 @@ components:
         liabilityThreshold:
           type: integer
           exclusiveMinimum: 0
-          description: The liability threshold considered for the bet combination
+          description: The liability threshold considered for the bet combination 
+        bets:
+          $ref: '#/components/schemas/Bets'
         legs:
           $ref: '#/components/schemas/Legs' 
+
+    Bets:
+      type: array
+      properties:
+        betId:
+          type: integer
+          exclusiveMinimum: 0
+          description: the bet id
+        productId:
+          type: integer
+          exclusiveMinimum: 0
+          description: the betting-state in which the bet was made.
 
     Legs:
       type: array
@@ -108,5 +130,4 @@ components:
           type: integer
           description: entity ramp id
           exclusiveMinimum: 0
-
 
