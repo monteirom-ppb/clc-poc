@@ -56,7 +56,7 @@ components:
           description: It's generated hash that represents a unique Id of all the legs that are part of this bet
         level:
           $ref: '#/components/schemas/LiabilityLevel'
-        value:
+        remainingPotentialWin:
           type: integer
           minimum: 0
           description: The remaining potential winning this customer have for this parlay
